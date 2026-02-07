@@ -17,7 +17,7 @@ const Hero: React.FC = () => {
   return (
     <div className="text-center space-y-28 max-w-6xl mx-auto pt-48 pb-20 relative min-h-[800px] flex flex-col justify-center">
       {/* Wave Background */}
-      <div className="absolute inset-0 z-0 flex items-center justify-center opacity-40 mix-blend-screen pointer-events-none">
+      <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
         <Wave
           width="100%"
           height="100%"

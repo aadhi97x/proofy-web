@@ -39,7 +39,7 @@ const WaveMaterial = shaderMaterial(
     }
 
     void main() {
-      vec2 uv = vUv * 2.0 - 1.0;  // -1..1 centered coords
+      vec2 uv = vUv * 2.0 - 1.0;
       vec2 uv0 = uv;
       vec3 finalColor = vec3(0.0);
 
@@ -60,7 +60,6 @@ const WaveMaterial = shaderMaterial(
 
 extend({ WaveMaterial })
 
-// Add type definition for the shader material
 declare global {
     namespace JSX {
         interface IntrinsicElements {
@@ -101,6 +100,7 @@ function WaveQuad({
     trackPointer?: boolean
 }) {
     const matRef = useRef<THREE.ShaderMaterial>(null)
+    const { viewport } = useThree()
 
     useFrame((state, delta) => {
         if (!matRef.current) return
@@ -119,14 +119,11 @@ function WaveQuad({
         matRef.current.uniforms.tiles.value = tiles
     })
 
-    // Use fixed size for geometry, let shader handle aspect ratio if needed, or scale mesh
     return (
         <group>
-            {/* Centered camera looking straight at origin */}
             <OrthographicCamera makeDefault position={[0, 0, 10]} zoom={1} />
             <mesh position={[0, 0, 0]}>
-                {/* Fullscreen plane */}
-                <planeGeometry args={[20, 20]} />
+                <planeGeometry args={[viewport.width, viewport.height]} />
                 <waveMaterial ref={matRef} transparent />
             </mesh>
         </group>
