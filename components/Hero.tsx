@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import NeuralBackground from './ui/flow-field-background.tsx';
+import { Wave } from './ui/wave.tsx';
 
 const Hero: React.FC = () => {
   const line1 = "Real media needs";
@@ -16,13 +16,13 @@ const Hero: React.FC = () => {
 
   return (
     <div className="text-center space-y-28 max-w-6xl mx-auto pt-48 pb-20 relative min-h-[800px] flex flex-col justify-center">
-      {/* Neural Flow Field Background */}
-      <div className="absolute inset-0 z-0">
-        <NeuralBackground
-          color="#00FF9C"
-          trailOpacity={0.2}
-          speed={0.6}
-          particleCount={100}
+      {/* Wave Background */}
+      <div className="absolute inset-0 z-0 flex items-center justify-center opacity-40 mix-blend-screen pointer-events-none">
+        <Wave
+          width="100%"
+          height="100%"
+          speed={0.8}
+          tiles={3}
         />
       </div>
 
