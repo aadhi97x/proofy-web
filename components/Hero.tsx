@@ -12,7 +12,7 @@ const Hero: React.FC = () => {
       <InteractiveNeuralVortex />
 
       {/* Content Layer */}
-      <div className="space-y-10 pointer-events-none">
+      <div className="space-y-10 pointer-events-none -mt-24">
 
         <h1 className="text-5xl md:text-[6rem] font-black tracking-tighter leading-[0.85] flex flex-col items-center select-none">
           <span className="flex overflow-hidden">
@@ -22,7 +22,7 @@ const Hero: React.FC = () => {
                 initial={{ y: "100%", opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.1 + i * 0.02, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                className="inline-block text-white"
+                className="inline-block text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.5)]"
                 style={{ whiteSpace: char === " " ? "pre" : "normal" }}
               >
                 {char}
