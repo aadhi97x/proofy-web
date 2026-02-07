@@ -90,7 +90,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen bg-charcoal text-white flex flex-col selection:bg-neon selection:text-charcoal font-sans relative ${isGravityActive ? 'overflow-hidden' : ''}`}>
+    <div className="min-h-screen bg-charcoal text-white flex flex-col selection:bg-neon selection:text-charcoal font-sans relative">
       <BackgroundGraphics />
 
       <header className="fixed top-0 inset-x-0 h-24 z-[100] px-10 flex items-center justify-between print:hidden">
