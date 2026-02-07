@@ -7,12 +7,12 @@ const Hero: React.FC = () => {
   const line2 = "REAL PROOF.";
 
   return (
-    <div className="text-center space-y-20 max-w-5xl mx-auto pt-32 pb-20 relative min-h-[700px] flex flex-col justify-center">
+    <div className="text-center space-y-16 max-w-5xl mx-auto relative min-h-screen flex flex-col justify-center">
       {/* Neural Vortex Background */}
       <InteractiveNeuralVortex />
 
       {/* Content Layer */}
-      <div className="space-y-10 relative z-10 pointer-events-none -mt-16">
+      <div className="space-y-10 relative z-10 pointer-events-none">
 
         <h1 className="text-5xl md:text-[6rem] font-black tracking-tighter leading-[0.85] flex flex-col items-center select-none" style={{ mixBlendMode: 'difference' }}>
           <span className="flex overflow-hidden">
@@ -36,7 +36,7 @@ const Hero: React.FC = () => {
                 initial={{ y: "100%", opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.8 + i * 0.04, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                className="inline-block text-neon italic group-hover:text-cyber transition-all duration-700"
+                className="inline-block text-white italic transition-all duration-700"
                 style={{ whiteSpace: char === " " ? "pre" : "normal" }}
               >
                 {char}
