@@ -39,10 +39,11 @@ const WaveMaterial = shaderMaterial(
     varying vec2 vUv;
 
     vec3 palette(float t) {
-      vec3 a = vec3(0.5, 0.5, 0.5);
-      vec3 b = vec3(0.5, 0.5, 0.5);
-      vec3 c = vec3(1.0, 1.0, 1.0);
-      vec3 d = vec3(0.263, 0.416, 0.557);
+      // Green + White palette matching #00FF9C neon theme
+      vec3 a = vec3(0.2, 0.6, 0.4);   // Base green tint
+      vec3 b = vec3(0.3, 0.5, 0.4);   // Amplitude
+      vec3 c = vec3(1.0, 1.0, 1.0);   // Frequency
+      vec3 d = vec3(0.0, 0.33, 0.17); // Phase offset for green
       return a + b * cos(6.28318 * (c * t + d));
     }
 
