@@ -13,10 +13,10 @@ interface NeuralBackgroundProps {
 export default function NeuralBackground({
     className,
     color = "#00FF9C",
-    // VIVID SETTINGS
-    trailOpacity = 0.035,
-    particleCount = 22000,
-    speed = 1.6,
+    // BUNDLED LINES SETTINGS
+    trailOpacity = 0.09, // Higher opacity to see structure clearly
+    particleCount = 5000, // Reduced from 22k to avoid mess, 5k is enough for clean bundles
+    speed = 0.8, // Slower for majesty
 }: NeuralBackgroundProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -56,7 +56,7 @@ export default function NeuralBackground({
                 this.vx = 0;
                 this.vy = 0;
                 this.age = Math.random() * 100;
-                this.life = Math.random() * 300 + 200;
+                this.life = Math.random() * 300 + 400; // Long life
                 this.baseSpeed = speed * (0.8 + Math.random() * 0.4);
             }
 
@@ -65,29 +65,30 @@ export default function NeuralBackground({
                 this.prevY = this.y;
 
                 // 1. Flow Field 
-                // Decreased zoom factor = Larger, more grouped patterns
-                const zoom = 0.0025;
+                // MUCH LOWER ZOOM = Large, coherent curves (Bundles)
+                const zoom = 0.0006;
+                // Simplex-ish noise approximation
                 const angle = (Math.cos(this.x * zoom) + Math.sin(this.y * zoom)) * Math.PI * 4;
 
                 const forceX = Math.cos(angle);
                 const forceY = Math.sin(angle);
 
-                this.vx += forceX * 0.15 * this.baseSpeed;
-                this.vy += forceY * 0.15 * this.baseSpeed;
+                this.vx += forceX * 0.1 * this.baseSpeed;
+                this.vy += forceY * 0.1 * this.baseSpeed;
 
-                // 2. Mouse Interaction (Turbulence)
+                // 2. Mouse Interaction
                 const dx = mouse.x - this.x;
                 const dy = mouse.y - this.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                const radius = 220; // Reduced radius
+                const radius = 300;
 
                 if (dist < radius) {
                     const force = (radius - dist) / radius;
                     const angleToMouse = Math.atan2(dy, dx);
 
-                    // Reduced turbulence, more push
-                    const pushX = -Math.cos(angleToMouse) * force * 3;
-                    const pushY = -Math.sin(angleToMouse) * force * 3;
+                    // Gentle push to not break the bundles too much
+                    const pushX = -Math.cos(angleToMouse) * force * 2;
+                    const pushY = -Math.sin(angleToMouse) * force * 2;
 
                     this.vx += pushX;
                     this.vy += pushY;
@@ -127,7 +128,7 @@ export default function NeuralBackground({
                 this.vx = 0;
                 this.vy = 0;
                 this.age = 0;
-                this.life = Math.random() * 300 + 200;
+                this.life = Math.random() * 300 + 400;
             }
 
             draw(context: CanvasRenderingContext2D) {
@@ -135,11 +136,10 @@ export default function NeuralBackground({
                 context.moveTo(this.prevX, this.prevY);
                 context.lineTo(this.x, this.y);
 
-                // Slightly lower alpha to accommodate grouping
                 const lifeRatio = this.age / this.life;
                 const alpha = Math.sin(lifeRatio * Math.PI);
 
-                context.globalAlpha = alpha * 0.8;
+                context.globalAlpha = alpha;
                 context.stroke();
             }
         }
@@ -153,7 +153,6 @@ export default function NeuralBackground({
             canvas.style.width = `100%`;
             canvas.style.height = `100%`;
 
-            // Fill black initially
             ctx.fillStyle = "#050505";
             ctx.fillRect(0, 0, width, height);
 
@@ -170,7 +169,7 @@ export default function NeuralBackground({
             ctx.fillRect(0, 0, width, height);
 
             ctx.strokeStyle = color;
-            ctx.lineWidth = 1;
+            ctx.lineWidth = 1.8; // THICKER LINES
 
             particles.forEach(p => {
                 p.update();
