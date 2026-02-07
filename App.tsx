@@ -97,7 +97,7 @@ const App: React.FC = () => {
         <div className="flex items-center gap-8">
           <button
             onClick={() => setSidebarExpanded(true)}
-            className="pointer-events-auto flex items-center justify-center group bg-white/5 backdrop-blur-3xl w-14 h-14 rounded-[1.25rem] border border-white/5 hover:border-neon transition-all shadow-[0_20px_40px_rgba(0,0,0,0.3)]"
+            className="pointer-events-auto flex items-center justify-center group bg-white/10 backdrop-blur-3xl w-14 h-14 rounded-[1.25rem] border border-white/5 hover:border-neon transition-all shadow-[0_20px_40px_rgba(0,0,0,0.3)]"
           >
             <div className="flex flex-col items-center justify-center gap-1.5">
               <div className="w-6 h-[2.5px] bg-white group-hover:bg-neon transition-colors rounded-full"></div>
@@ -212,7 +212,7 @@ const App: React.FC = () => {
 const QuickToolCard: React.FC<{ title: string, description: string, icon: string, color: string, onClick: () => void }> = ({ title, description, icon, color, onClick }) => (
   <button
     onClick={onClick}
-    className="glass p-14 text-left overflow-hidden relative border border-white/5 rounded-[3.5rem] bg-surface/30 w-full group transition-all duration-700 hover:shadow-[0_30px_80px_rgba(0,0,0,0.6)] hover:-translate-y-2 hover:border-white/10"
+    className="glass p-14 text-left overflow-hidden relative border border-white/5 rounded-[3.5rem] bg-surface/50 w-full group transition-all duration-700 hover:shadow-[0_30px_80px_rgba(0,0,0,0.6)] hover:-translate-y-2 hover:border-white/10"
   >
     <div className={`w-18 h-18 rounded-[1.75rem] bg-white/5 backdrop-blur-xl border border-white/5 flex items-center justify-center mb-10 group-hover:scale-110 transition-all duration-700 ${color} group-hover:shadow-[0_0_40px_currentColor] group-hover:bg-white/10`}>
       <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d={icon} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>

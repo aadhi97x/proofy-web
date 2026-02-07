@@ -1,157 +1,173 @@
-
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PROOFY.AI | Truth Verification Suite</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@100;300;400;600;700;900&display=swap" rel="stylesheet">
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              accent: '#00FF9C', 
-              surface: '#0A0A0A',
-              surfaceLight: '#141414',
-              border: '#1F1F1F',
-              charcoal: '#050505',
-              neon: '#00FF9C',
-              cyber: '#00D1FF',
-              danger: '#FF2D55',
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PROOFY.AI | Truth Verification Suite</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@100;300;400;600;700;900&display=swap"
+    rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            accent: '#00FF9C',
+            surface: '#0A0A0A',
+            surfaceLight: '#141414',
+            border: '#1F1F1F',
+            charcoal: '#050505',
+            neon: '#00FF9C',
+            cyber: '#00D1FF',
+            danger: '#FF2D55',
+          },
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            mono: ['Geist Mono', 'monospace'],
+          },
+          animation: {
+            'pulse-slow': 'pulse-slow 6s ease-in-out infinite',
+            'scan-sweep': 'scan-sweep 4s linear infinite',
+            'spin-slow': 'spin 12s linear infinite',
+            'float': 'float 6s ease-in-out infinite',
+            'shimmer': 'shimmer 2s linear infinite',
+          },
+          keyframes: {
+            'scan-sweep': {
+              '0%': { top: '0%' },
+              '100%': { top: '100%' }
             },
-            fontFamily: {
-              sans: ['Outfit', 'sans-serif'],
-              mono: ['Geist Mono', 'monospace'],
+            'float': {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-20px)' }
             },
-            animation: {
-              'pulse-slow': 'pulse-slow 6s ease-in-out infinite',
-              'scan-sweep': 'scan-sweep 4s linear infinite',
-              'spin-slow': 'spin 12s linear infinite',
-              'float': 'float 6s ease-in-out infinite',
-              'shimmer': 'shimmer 2s linear infinite',
-            },
-            keyframes: {
-              'scan-sweep': {
-                '0%': { top: '0%' },
-                '100%': { top: '100%' }
-              },
-              'float': {
-                '0%, 100%': { transform: 'translateY(0)' },
-                '50%': { transform: 'translateY(-20px)' }
-              },
-              'shimmer': {
-                '100%': { transform: 'translateX(100%)' }
-              }
-            },
-            backgroundImage: {
-                'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-                'neon-gradient': 'linear-gradient(45deg, #00FF9C, #00D1FF)',
+            'shimmer': {
+              '100%': { transform: 'translateX(100%)' }
             }
           },
+          backgroundImage: {
+            'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+            'neon-gradient': 'linear-gradient(45deg, #00FF9C, #00D1FF)',
+          }
         },
-      };
-    </script>
-    <style>
-      :root {
-        --charcoal: #050505;
-        --surface: #0A0A0A;
-        --surface-light: #141414;
-        --neon: #00FF9C;
-        --cyber: #00D1FF;
-        --border: #1F1F1F;
-        --danger: #FF2D55;
-      }
+      },
+    };
+  </script>
+  <style>
+    :root {
+      --charcoal: #050505;
+      --surface: #0A0A0A;
+      --surface-light: #141414;
+      --neon: #00FF9C;
+      --cyber: #00D1FF;
+      --border: #1F1F1F;
+      --danger: #FF2D55;
+    }
 
-      * {
-        scrollbar-gutter: stable;
-      }
+    * {
+      scrollbar-gutter: stable;
+    }
 
-      body {
-        font-family: 'Outfit', sans-serif;
-        background-color: var(--charcoal);
-        color: #ffffff;
-        overflow-x: hidden;
-      }
-      
-      .bento-card {
-        background: linear-gradient(135deg, rgba(20, 20, 20, 0.8) 0%, rgba(10, 10, 10, 0.9) 100%);
-        border: 1px solid var(--border);
-        border-radius: 24px;
-        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-        position: relative;
-        overflow: hidden;
-      }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--charcoal);
+      color: #ffffff;
+      overflow-x: hidden;
+    }
 
-      .bento-card::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(45deg, transparent, rgba(0, 255, 156, 0.03), transparent);
-        transform: translateX(-100%);
-        transition: transform 0.8s;
-      }
+    .bento-card {
+      background: linear-gradient(135deg, rgba(20, 20, 20, 0.8) 0%, rgba(10, 10, 10, 0.9) 100%);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+      position: relative;
+      overflow: hidden;
+    }
 
-      .bento-card:hover {
-        border-color: rgba(0, 255, 156, 0.3);
-        transform: translateY(-5px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 255, 156, 0.05);
-      }
+    .bento-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(45deg, transparent, rgba(0, 255, 156, 0.03), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.8s;
+    }
 
-      .bento-card:hover::before {
-        transform: translateX(100%);
-      }
+    .bento-card:hover {
+      border-color: rgba(0, 255, 156, 0.3);
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 255, 156, 0.05);
+    }
 
-      .glass {
-        background: rgba(20, 20, 20, 0.6);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-      }
+    .bento-card:hover::before {
+      transform: translateX(100%);
+    }
 
-      .neon-glow {
-        box-shadow: 0 0 20px rgba(0, 255, 156, 0.2);
-      }
+    .glass {
+      background: rgba(20, 20, 20, 0.8);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
 
-      .cyber-glow {
-        box-shadow: 0 0 20px rgba(0, 209, 255, 0.2);
-      }
+    .neon-glow {
+      box-shadow: 0 0 20px rgba(0, 255, 156, 0.2);
+    }
 
-      .bg-grid-forensic {
-        background-size: 60px 60px;
-        background-image: 
-          linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-          linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
-        mask-image: radial-gradient(circle at center, black, transparent 80%);
-      }
+    .cyber-glow {
+      box-shadow: 0 0 20px rgba(0, 209, 255, 0.2);
+    }
 
-      .font-data {
-        font-family: 'Geist Mono', monospace;
-        letter-spacing: -0.02em;
-      }
+    .bg-grid-forensic {
+      background-size: 60px 60px;
+      background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+      mask-image: radial-gradient(circle at center, black, transparent 80%);
+    }
 
-      @keyframes reveal-stagger {
-        from { opacity: 0; transform: translateY(30px) scale(0.98); }
-        to { opacity: 1; transform: translateY(0) scale(1); }
-      }
+    .font-data {
+      font-family: 'Geist Mono', monospace;
+      letter-spacing: -0.02em;
+    }
 
-      .animate-reveal {
-        animation: reveal-stagger 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    @keyframes reveal-stagger {
+      from {
         opacity: 0;
+        transform: translateY(30px) scale(0.98);
       }
 
-      .no-scrollbar::-webkit-scrollbar { display: none; }
-      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-      ::selection {
-        background: var(--neon);
-        color: var(--charcoal);
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
       }
-    </style>
+    }
+
+    .animate-reveal {
+      animation: reveal-stagger 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    ::selection {
+      background: var(--neon);
+      color: var(--charcoal);
+    }
+  </style>
   <script type="importmap">
 {
   "imports": {
@@ -167,8 +183,10 @@
 }
 </script>
 </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="index.tsx"></script>
-  </body>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="index.tsx"></script>
+</body>
+
 </html>

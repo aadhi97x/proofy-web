@@ -16,7 +16,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onStart }) => {
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="max-w-6xl mx-auto glass border border-white/10 rounded-[5rem] p-16 md:p-32 text-center space-y-12 relative shadow-[0_50px_100px_rgba(0,0,0,0.8)] overflow-hidden group bg-charcoal/40 backdrop-blur-3xl"
+        className="max-w-6xl mx-auto glass border border-white/10 rounded-[5rem] p-16 md:p-32 text-center space-y-12 relative shadow-[0_50px_100px_rgba(0,0,0,0.8)] overflow-hidden group bg-charcoal/60 backdrop-blur-3xl"
       >
         <div className="absolute inset-0 bg-grid-forensic opacity-[0.05] pointer-events-none" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-neon/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />

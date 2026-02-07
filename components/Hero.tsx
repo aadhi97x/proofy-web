@@ -71,7 +71,7 @@ const Hero: React.FC = () => {
       >
         <button
           onClick={() => document.getElementById('upload-zone')?.scrollIntoView({ behavior: 'smooth' })}
-          className="group relative px-24 py-8 bg-black/50 backdrop-blur-md border border-neon/20 text-neon font-black rounded-3xl text-[11px] uppercase tracking-[0.8em] hover:border-neon transition-all duration-1000 active:scale-[0.98] overflow-hidden"
+          className="group relative px-24 py-8 bg-black/70 backdrop-blur-xl border border-neon/20 text-neon font-black rounded-3xl text-[11px] uppercase tracking-[0.8em] hover:border-neon transition-all duration-1000 active:scale-[0.98] overflow-hidden"
         >
           <span className="relative z-10 group-hover:text-charcoal transition-colors duration-500">Initiate Core Scan</span>
           <motion.div

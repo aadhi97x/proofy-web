@@ -71,7 +71,7 @@ const HowItWorks: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: idx * 0.1 }}
             onClick={() => setExpanded(expanded === step.id ? null : step.id)}
-            className={`group p-12 glass border ${expanded === step.id ? 'border-neon/40 bg-surface/40' : 'border-white/5 bg-surface/20'} rounded-[4rem] transition-all duration-700 cursor-pointer relative overflow-hidden shadow-2xl hover:border-white/20`}
+            className={`group p-12 glass border ${expanded === step.id ? 'border-neon/40 bg-surface/60' : 'border-white/5 bg-surface/40'} rounded-[4rem] transition-all duration-700 cursor-pointer relative overflow-hidden shadow-2xl hover:border-white/20`}
           >
             <div className="flex items-start justify-between relative z-10">
               <div className="space-y-8 flex-grow">
