@@ -1,15 +1,15 @@
 /*
   Single-file Wave component using @react-three/fiber and @react-three/drei.
   - Full screen coverage
-  - Follows cursor smoothly
+  - Flowing waves that react to cursor
 */
 
 "use client"
 
 import type React from "react"
-import { useRef, useState, Suspense, useEffect } from "react"
+import { useRef, Suspense, useEffect } from "react"
 import * as THREE from "three"
-import { Canvas, extend, useFrame, useThree } from "@react-three/fiber"
+import { Canvas, extend, useFrame } from "@react-three/fiber"
 import { shaderMaterial } from "@react-three/drei"
 
 // Wave shader material
@@ -18,7 +18,6 @@ const WaveMaterial = shaderMaterial(
         time: 0,
         resolution: new THREE.Vector2(1, 1),
         pointer: new THREE.Vector2(0.0, 0.0),
-        tiles: 1.5,
     },
   /* glsl */ `
     varying vec2 vUv;
@@ -31,33 +30,43 @@ const WaveMaterial = shaderMaterial(
     uniform float time;
     uniform vec2 resolution;
     uniform vec2 pointer;
-    uniform float tiles;
     varying vec2 vUv;
 
     vec3 palette(float t) {
-      vec3 a = vec3(0.0, 0.7, 0.4);
-      vec3 b = vec3(0.2, 0.5, 0.3);
+      vec3 a = vec3(0.0, 0.6, 0.35);
+      vec3 b = vec3(0.3, 0.5, 0.4);
       vec3 c = vec3(1.0, 1.0, 1.0);
-      vec3 d = vec3(0.0, 0.25, 0.1);
+      vec3 d = vec3(0.0, 0.2, 0.1);
       return a + b * cos(6.28318 * (c * t + d));
     }
 
     void main() {
-      vec2 uv = vUv * 2.0 - 1.0;
-      
-      // Offset origin above the screen so circle isn't visible
-      vec2 origin = vec2(pointer.x * 0.3, 2.5);
-      vec2 uv0 = uv - origin;
+      vec2 uv = vUv;
+      vec2 p = uv * 2.0 - 1.0;
+      p.x *= resolution.x / resolution.y;
       
       vec3 finalColor = vec3(0.0);
-
-      float d = length(uv0) * exp(-length(uv0) * 0.3);
-      vec3 col = palette(length(uv0) * 0.5 + time * 0.4);
-      d = sin(d * 8.0 + time) / 8.0;
-      d = abs(d);
-      d = pow(0.02 / d, 2.0);
-      finalColor += col * d;
-
+      
+      // Create multiple flowing wave bands
+      for(float i = 0.0; i < 4.0; i++) {
+        float offset = i * 0.8;
+        
+        // Compute wave position influenced by cursor
+        float waveY = sin(p.x * 2.0 + time * 0.5 + offset + pointer.x * 0.5) * 0.3;
+        waveY += cos(p.x * 1.5 - time * 0.3 + i) * 0.2;
+        waveY += pointer.y * 0.2;
+        
+        // Distance from wave center line
+        float dist = abs(p.y - waveY + (i - 1.5) * 0.4);
+        
+        // Create glowing band
+        float intensity = 0.015 / (dist + 0.01);
+        intensity = pow(intensity, 1.5);
+        
+        vec3 col = palette(i * 0.25 + time * 0.1 + p.x * 0.2);
+        finalColor += col * intensity * 0.15;
+      }
+      
       float alpha = clamp(length(finalColor), 0.0, 1.0);
       gl_FragColor = vec4(finalColor, alpha);
     }
@@ -68,18 +77,15 @@ extend({ WaveMaterial })
 
 export type WaveProps = {
     speed?: number
-    tiles?: number
     className?: string
     style?: React.CSSProperties
 }
 
 function FullScreenQuad({
     speed = 1,
-    tiles = 1.5,
     mousePos,
 }: {
     speed?: number
-    tiles?: number
     mousePos: React.MutableRefObject<{ x: number; y: number }>
 }) {
     const matRef = useRef<THREE.ShaderMaterial>(null)
@@ -90,13 +96,12 @@ function FullScreenQuad({
         matRef.current.uniforms.time.value += delta * speed
         matRef.current.uniforms.resolution.value.set(state.size.width, state.size.height)
 
-        // Smooth follow cursor (slower = more elegant)
+        // Smooth follow cursor
         const lerpSpeed = 1.5
         smoothPointer.current.x += (mousePos.current.x - smoothPointer.current.x) * delta * lerpSpeed
         smoothPointer.current.y += (mousePos.current.y - smoothPointer.current.y) * delta * lerpSpeed
 
         matRef.current.uniforms.pointer.value.set(smoothPointer.current.x, smoothPointer.current.y)
-        matRef.current.uniforms.tiles.value = tiles
     })
 
     return (
@@ -110,7 +115,6 @@ function FullScreenQuad({
 
 export function Wave({
     speed = 1,
-    tiles = 1.5,
     className,
     style,
 }: WaveProps) {
@@ -160,7 +164,7 @@ export function Wave({
                 }}
             >
                 <Suspense fallback={null}>
-                    <FullScreenQuad speed={speed} tiles={tiles} mousePos={mousePos} />
+                    <FullScreenQuad speed={speed} mousePos={mousePos} />
                 </Suspense>
             </Canvas>
         </div>
