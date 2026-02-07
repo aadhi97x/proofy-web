@@ -67,7 +67,7 @@ const ForensicDeepDive: React.FC = () => {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ delay: idx * 0.1, duration: 0.8 }}
               viewport={{ once: true }}
-              className={`glass border transition-all duration-700 rounded-[2.5rem] overflow-hidden ${active === cat.id ? 'bg-surfaceLight/80 border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.5)]' : 'bg-transparent border-white/5 hover:border-white/10'}`}
+              className={`glass border transition-all duration-700 rounded-[2.5rem] overflow-hidden ${active === cat.id ? 'bg-surfaceLight/80 border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.5)]' : 'bg-surface/40 border-white/5 hover:border-white/10'}`}
             >
               <button
                 onClick={() => setActive(active === cat.id ? null : cat.id)}

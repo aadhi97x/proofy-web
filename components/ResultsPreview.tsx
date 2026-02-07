@@ -34,7 +34,7 @@ const ResultsPreview: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 pt-12">
             <motion.div
               whileHover={{ y: -5 }}
-              className="space-y-4 p-10 glass border border-white/5 rounded-[3rem] bg-surface/20 group/card"
+              className="space-y-4 p-10 glass border border-white/5 rounded-[3rem] bg-surface/40 group/card"
             >
               <div className="flex items-center justify-center gap-3 text-white/20 mb-2">
                 <Zap size={14} className="group-hover/card:text-cyber transition-colors" />
@@ -46,7 +46,7 @@ const ResultsPreview: React.FC = () => {
 
             <motion.div
               whileHover={{ y: -5 }}
-              className="space-y-4 p-10 glass border border-neon/20 rounded-[3.5rem] bg-neon/5 group/card shadow-[0_30px_60px_rgba(0,255,156,0.1)]"
+              className="space-y-4 p-10 glass border border-neon/20 rounded-[3.5rem] bg-neon/10 group/card shadow-[0_30px_60px_rgba(0,255,156,0.1)]"
             >
               <div className="flex items-center justify-center gap-3 text-neon/40 mb-2">
                 <Shield size={14} className="group-hover/card:animate-pulse" />
@@ -64,7 +64,7 @@ const ResultsPreview: React.FC = () => {
 
             <motion.div
               whileHover={{ y: -5 }}
-              className="space-y-4 p-10 glass border border-white/5 rounded-[3rem] bg-surface/20 group/card"
+              className="space-y-4 p-10 glass border border-white/5 rounded-[3rem] bg-surface/40 group/card"
             >
               <div className="flex items-center justify-center gap-3 text-white/20 mb-2">
                 <Layers size={14} className="group-hover/card:text-neon transition-colors" />
