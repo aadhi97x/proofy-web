@@ -1,7 +1,7 @@
 /*
   Single-file Wave component using @react-three/fiber and @react-three/drei.
   - Transparent background
-  - Centered plane in scene
+  - Full screen coverage
   - Smooth pointer interpolation
 */
 
@@ -10,8 +10,8 @@
 import type React from "react"
 import { useRef, useState, Suspense } from "react"
 import * as THREE from "three"
-import { Canvas, extend, useFrame } from "@react-three/fiber"
-import { shaderMaterial, OrthographicCamera } from "@react-three/drei"
+import { Canvas, extend, useFrame, useThree } from "@react-three/fiber"
+import { shaderMaterial } from "@react-three/drei"
 
 // Wave shader material
 const WaveMaterial = shaderMaterial(
@@ -40,10 +40,10 @@ const WaveMaterial = shaderMaterial(
 
     vec3 palette(float t) {
       // Saturated Green + White palette for #00FF9C neon theme
-      vec3 a = vec3(0.0, 0.7, 0.4);   // Strong green base
-      vec3 b = vec3(0.2, 0.5, 0.3);   // Amplitude
-      vec3 c = vec3(1.0, 1.0, 1.0);   // Frequency
-      vec3 d = vec3(0.0, 0.25, 0.1);  // Phase - more green shift
+      vec3 a = vec3(0.0, 0.7, 0.4);
+      vec3 b = vec3(0.2, 0.5, 0.3);
+      vec3 c = vec3(1.0, 1.0, 1.0);
+      vec3 d = vec3(0.0, 0.25, 0.1);
       return a + b * cos(6.28318 * (c * t + d));
     }
 
@@ -70,8 +70,6 @@ const WaveMaterial = shaderMaterial(
 extend({ WaveMaterial })
 
 export type WaveProps = {
-    width?: number | string
-    height?: number | string
     speed?: number
     tiles?: number
     pointer?: { x: number; y: number }
@@ -94,8 +92,9 @@ function WaveQuad({
     trackPointer?: boolean
 }) {
     const matRef = useRef<THREE.ShaderMaterial>(null)
-    // Smoothed pointer position for seamless transitions
+    const meshRef = useRef<THREE.Mesh>(null)
     const smoothPointer = useRef(new THREE.Vector2(0, 0))
+    const { viewport } = useThree()
 
     useFrame((state, delta) => {
         if (!matRef.current) return
@@ -105,7 +104,7 @@ function WaveQuad({
             state.size.height,
         )
 
-        // Get target pointer position
+        // Get target pointer
         let targetX = 0
         let targetY = 0
 
@@ -117,10 +116,10 @@ function WaveQuad({
             targetY = state.pointer.y
         }
 
-        // Smooth interpolation (lerp) for seamless movement
-        const lerpFactor = 1 - Math.pow(0.001, delta) // Smooth easing
-        smoothPointer.current.x += (targetX - smoothPointer.current.x) * lerpFactor * 3
-        smoothPointer.current.y += (targetY - smoothPointer.current.y) * lerpFactor * 3
+        // Smooth lerp
+        const lerpSpeed = 5
+        smoothPointer.current.x += (targetX - smoothPointer.current.x) * delta * lerpSpeed
+        smoothPointer.current.y += (targetY - smoothPointer.current.y) * delta * lerpSpeed
 
         matRef.current.uniforms.pointer.value.set(
             smoothPointer.current.x,
@@ -130,21 +129,15 @@ function WaveQuad({
     })
 
     return (
-        <group>
-            <OrthographicCamera makeDefault position={[0, 0, 10]} />
-            <mesh position={[0, 0, 0]}>
-                {/* Use viewport-sized plane */}
-                <planeGeometry args={[2, 2]} />
-                {/* @ts-expect-error - intrinsic element added via extend */}
-                <waveMaterial ref={matRef} transparent />
-            </mesh>
-        </group>
+        <mesh ref={meshRef} scale={[viewport.width, viewport.height, 1]}>
+            <planeGeometry args={[1, 1]} />
+            {/* @ts-expect-error - intrinsic element added via extend */}
+            <waveMaterial ref={matRef} transparent />
+        </mesh>
     )
 }
 
 export function Wave({
-    width = "100%",
-    height = "100%",
     speed = 1,
     tiles = 1.5,
     pointer: pointerOverride,
@@ -160,8 +153,6 @@ export function Wave({
         <div
             className={className}
             style={{
-                width,
-                height,
                 position: "absolute",
                 inset: 0,
                 overflow: "hidden",
@@ -181,10 +172,10 @@ export function Wave({
                 dpr={dpr}
                 frameloop="always"
                 gl={{ antialias: true, alpha: true }}
+                orthographic
+                camera={{ zoom: 1, position: [0, 0, 100] }}
                 style={{
                     background: "transparent",
-                    position: "absolute",
-                    inset: 0,
                     width: "100%",
                     height: "100%"
                 }}
