@@ -44,19 +44,23 @@ const WaveMaterial = shaderMaterial(
 
     void main() {
       vec2 uv = vUv * 2.0 - 1.0;
-      vec2 uv0 = uv;
       vec3 finalColor = vec3(0.0);
 
-      uv = uv * tiles - pointer;
+      // Diagonal flow direction instead of radial
+      vec2 flowDir = normalize(vec2(1.0, 0.6));
+      float flow = dot(uv - pointer * 0.5, flowDir);
+      
+      // Multiple wave layers for depth
+      for(float i = 0.0; i < 3.0; i++) {
+        float offset = i * 0.4;
+        float wave = sin((flow + offset) * 6.0 + time * (0.8 + i * 0.2)) * 0.5 + 0.5;
+        wave = pow(wave, 3.0);
+        
+        vec3 col = palette(flow * 0.3 + time * 0.2 + i * 0.15);
+        finalColor += col * wave * (0.4 - i * 0.1);
+      }
 
-      float d = length(uv) * exp(-length(uv0));
-      vec3 col = palette(length(uv0) + time * 0.4);
-      d = sin(d * 8.0 + time) / 8.0;
-      d = abs(d);
-      d = pow(0.02 / d, 2.0);
-      finalColor += col * d;
-
-      float alpha = clamp(length(finalColor), 0.0, 1.0);
+      float alpha = clamp(length(finalColor) * 0.8, 0.0, 1.0);
       gl_FragColor = vec4(finalColor, alpha);
     }
   `,
