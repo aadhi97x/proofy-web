@@ -13,10 +13,10 @@ interface NeuralBackgroundProps {
 export default function NeuralBackground({
     className,
     color = "#00FF9C",
-    // EXTREME SETTINGS
-    trailOpacity = 0.03, // Very low opacity = Extremely long, smooth trails
-    particleCount = 14000, // Massive amount of particles for density
-    speed = 2, // Faster movement
+    // VIVID SETTINGS
+    trailOpacity = 0.035,
+    particleCount = 22000,
+    speed = 1.6,
 }: NeuralBackgroundProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -26,7 +26,7 @@ export default function NeuralBackground({
         const container = containerRef.current;
         if (!canvas || !container) return;
 
-        const ctx = canvas.getContext("2d", { alpha: false }); // Optimization
+        const ctx = canvas.getContext("2d", { alpha: false });
         if (!ctx) return;
 
         // --- CONFIGURATION ---
@@ -56,8 +56,8 @@ export default function NeuralBackground({
                 this.vx = 0;
                 this.vy = 0;
                 this.age = Math.random() * 100;
-                this.life = Math.random() * 300 + 200; // Longer life
-                this.baseSpeed = speed * (0.8 + Math.random() * 0.6);
+                this.life = Math.random() * 300 + 200;
+                this.baseSpeed = speed * (0.8 + Math.random() * 0.4);
             }
 
             update() {
@@ -65,9 +65,9 @@ export default function NeuralBackground({
                 this.prevY = this.y;
 
                 // 1. Flow Field 
-                // Tighter zoom for more intricate swirls
-                const zoom = 0.005;
-                const angle = (Math.cos(this.x * zoom) + Math.sin(this.y * zoom)) * Math.PI * 3;
+                // Decreased zoom factor = Larger, more grouped patterns
+                const zoom = 0.0025;
+                const angle = (Math.cos(this.x * zoom) + Math.sin(this.y * zoom)) * Math.PI * 4;
 
                 const forceX = Math.cos(angle);
                 const forceY = Math.sin(angle);
@@ -79,15 +79,15 @@ export default function NeuralBackground({
                 const dx = mouse.x - this.x;
                 const dy = mouse.y - this.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                const radius = 300; // Large influence area
+                const radius = 220; // Reduced radius
 
                 if (dist < radius) {
                     const force = (radius - dist) / radius;
                     const angleToMouse = Math.atan2(dy, dx);
 
-                    // Violent repulsion + swirl
-                    const pushX = -Math.cos(angleToMouse) * force * 8;
-                    const pushY = -Math.sin(angleToMouse) * force * 8;
+                    // Reduced turbulence, more push
+                    const pushX = -Math.cos(angleToMouse) * force * 3;
+                    const pushY = -Math.sin(angleToMouse) * force * 3;
 
                     this.vx += pushX;
                     this.vy += pushY;
@@ -97,8 +97,8 @@ export default function NeuralBackground({
                 this.x += this.vx;
                 this.y += this.vy;
 
-                this.vx *= 0.95;
-                this.vy *= 0.95;
+                this.vx *= 0.96;
+                this.vy *= 0.96;
 
                 // 4. Aging
                 this.age++;
@@ -135,11 +135,11 @@ export default function NeuralBackground({
                 context.moveTo(this.prevX, this.prevY);
                 context.lineTo(this.x, this.y);
 
-                // Always high alpha for intensity
+                // Slightly lower alpha to accommodate grouping
                 const lifeRatio = this.age / this.life;
                 const alpha = Math.sin(lifeRatio * Math.PI);
 
-                context.globalAlpha = alpha; // Max intensity
+                context.globalAlpha = alpha * 0.8;
                 context.stroke();
             }
         }
@@ -165,13 +165,12 @@ export default function NeuralBackground({
 
         // --- ANIMATE ---
         const animate = () => {
-            // Very slight fade for long, glowing trails
             ctx.globalAlpha = 1;
             ctx.fillStyle = `rgba(5, 5, 5, ${trailOpacity})`;
             ctx.fillRect(0, 0, width, height);
 
             ctx.strokeStyle = color;
-            ctx.lineWidth = 1.2;
+            ctx.lineWidth = 1;
 
             particles.forEach(p => {
                 p.update();

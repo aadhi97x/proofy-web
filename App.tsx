@@ -105,22 +105,9 @@ const App: React.FC = () => {
               <div className="w-3 h-[2.5px] bg-white group-hover:bg-neon transition-colors self-start rounded-full"></div>
             </div>
           </button>
-          <div className="hidden md:flex flex-col opacity-20 pointer-events-none uppercase font-mono text-[9px] tracking-[0.4em] pt-1">
-            <span className="text-white">Proofy_Forensics_v2.0.4</span>
-            <span className="text-neon">Status: Online_Secure</span>
-          </div>
         </div>
 
         <div className="flex items-center gap-8">
-          <div className="hidden xl:flex items-center gap-6 px-6 py-2.5 glass border border-white/5 rounded-2xl pointer-events-auto">
-            <div className="flex flex-col text-right">
-              <span className="text-[9px] font-black uppercase text-white/30 tracking-widest leading-none">Local Neural Node</span>
-              <span className="text-[10px] font-mono text-white/60">0x8F92...E2A</span>
-            </div>
-            <div className="w-8 h-8 rounded-lg bg-neon/10 border border-neon/20 flex items-center justify-center text-neon">
-              <RefreshCw size={14} className="animate-spin-slow" />
-            </div>
-          </div>
           <Logo size="md" onClick={reset} className="pointer-events-auto hover:scale-105 transition-transform" />
         </div>
       </header>

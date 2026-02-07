@@ -28,18 +28,8 @@ const Hero: React.FC = () => {
 
       {/* Content Layer */}
       <div className="space-y-14 relative z-10 pointer-events-none">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "circOut" }}
-          className="flex items-center justify-center gap-4 mb-10"
-        >
-          <div className="h-[1px] w-12 bg-neon/30"></div>
-          <span className="text-[11px] font-black uppercase tracking-[0.8em] text-neon italic">Forensic Suite v2.0.4</span>
-          <div className="h-[1px] w-12 bg-neon/30"></div>
-        </motion.div>
 
-        <h1 className="text-8xl md:text-[9rem] font-black tracking-tighter leading-[0.85] flex flex-col items-center select-none shadow-black drop-shadow-2xl">
+        <h1 className="text-6xl md:text-[7rem] font-black tracking-tighter leading-[0.85] flex flex-col items-center select-none shadow-black drop-shadow-2xl">
           <span className="flex overflow-hidden">
             {line1.split("").map((char, i) => (
               <motion.span
