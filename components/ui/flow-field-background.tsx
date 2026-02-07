@@ -3,34 +3,19 @@ import { cn } from "@/lib/utils";
 
 interface NeuralBackgroundProps {
     className?: string;
-    /**
-     * Color of the particles. 
-     * Defaults to a cyan/indigo mix if not specified.
-     */
     color?: string;
-    /**
-     * The opacity of the trails (0.0 to 1.0).
-     * Lower = longer trails. Higher = shorter trails.
-     * Default: 0.1
-     */
     trailOpacity?: number;
-    /**
-     * Number of particles. Default: 800
-     */
     particleCount?: number;
-    /**
-     * Speed multiplier. Default: 1
-     */
     speed?: number;
     scale?: number;
 }
 
 export default function NeuralBackground({
     className,
-    color = "#00FF9C", // Default Neon Green
-    trailOpacity = 0.2, // Slightly higher for cleaner look
-    particleCount = 600,
-    speed = 1,
+    color = "#00FF9C",
+    trailOpacity = 0.08, // Lower opacity = longer, smoother trails
+    particleCount = 2000, // Significantly increased for "intense" look
+    speed = 1.2,
 }: NeuralBackgroundProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -48,7 +33,7 @@ export default function NeuralBackground({
         let height = container.clientHeight;
         let particles: Particle[] = [];
         let animationFrameId: number;
-        let mouse = { x: -1000, y: -1000 }; // Start off-screen
+        let mouse = { x: -1000, y: -1000, active: false };
 
         // --- PARTICLE CLASS ---
         class Particle {
@@ -58,6 +43,7 @@ export default function NeuralBackground({
             vy: number;
             age: number;
             life: number;
+            baseSpeed: number;
 
             constructor() {
                 this.x = Math.random() * width;
@@ -65,37 +51,47 @@ export default function NeuralBackground({
                 this.vx = 0;
                 this.vy = 0;
                 this.age = 0;
-                // Random lifespan to create natural recycling
-                this.life = Math.random() * 200 + 100;
+                this.life = Math.random() * 300 + 100;
+                this.baseSpeed = speed * (0.5 + Math.random() * 0.5); // Varied speeds
             }
 
             update() {
                 // 1. Flow Field Math (Simplex-ish noise)
                 // We calculate an angle based on position to create the "flow"
-                const angle = (Math.cos(this.x * 0.005) + Math.sin(this.y * 0.005)) * Math.PI;
+                // Increased frequency for more "swirly" vivid look
+                const angle = (Math.cos(this.x * 0.003) + Math.sin(this.y * 0.003)) * Math.PI * 1.5;
 
                 // 2. Add force from flow field
-                this.vx += Math.cos(angle) * 0.2 * speed;
-                this.vy += Math.sin(angle) * 0.2 * speed;
+                const forceX = Math.cos(angle);
+                const forceY = Math.sin(angle);
 
-                // 3. Mouse Repulsion/Attraction
+                this.vx += forceX * 0.1 * this.baseSpeed;
+                this.vy += forceY * 0.1 * this.baseSpeed;
+
+                // 3. Strong Mouse Repulsion / Breakdown
+                // "Break down and flow field around the cursor"
                 const dx = mouse.x - this.x;
                 const dy = mouse.y - this.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-                const interactionRadius = 150;
+                const interactionRadius = 250; // Larger radius
 
                 if (distance < interactionRadius) {
                     const force = (interactionRadius - distance) / interactionRadius;
-                    // Push away
-                    this.vx -= dx * force * 0.05;
-                    this.vy -= dy * force * 0.05;
+                    // Strong repulsion
+                    const pushStrength = 2.5;
+                    this.vx -= (dx / distance) * force * pushStrength;
+                    this.vy -= (dy / distance) * force * pushStrength;
+
+                    // Add "chaos" (breakdown) to velocity when near mouse
+                    this.vx += (Math.random() - 0.5) * force * 1.5;
+                    this.vy += (Math.random() - 0.5) * force * 1.5;
                 }
 
                 // 4. Apply Velocity & Friction
                 this.x += this.vx;
                 this.y += this.vy;
-                this.vx *= 0.95; // Friction to stop infinite acceleration
-                this.vy *= 0.95;
+                this.vx *= 0.96;
+                this.vy *= 0.96;
 
                 // 5. Aging
                 this.age++;
@@ -116,21 +112,20 @@ export default function NeuralBackground({
                 this.vx = 0;
                 this.vy = 0;
                 this.age = 0;
-                this.life = Math.random() * 200 + 100;
+                this.life = Math.random() * 300 + 100;
             }
 
             draw(context: CanvasRenderingContext2D) {
-                context.fillStyle = color;
-                // Fade in and out based on age
-                const alpha = 1 - Math.abs((this.age / this.life) - 0.5) * 2;
+                // Vividness: Higher opacity for new particles
+                const alpha = Math.min(1, (1 - Math.abs((this.age / this.life) - 0.5) * 2) + 0.2);
                 context.globalAlpha = alpha;
-                context.fillRect(this.x, this.y, 1.5, 1.5); // Tiny dots are faster than arcs
+                context.fillStyle = color;
+                context.fillRect(this.x, this.y, 1.2, 1.2);
             }
         }
 
         // --- INITIALIZATION ---
         const init = () => {
-            // Handle High-DPI screens (Retina)
             const dpr = window.devicePixelRatio || 1;
             canvas.width = width * dpr;
             canvas.height = height * dpr;
@@ -146,10 +141,7 @@ export default function NeuralBackground({
 
         // --- ANIMATION LOOP ---
         const animate = () => {
-            // "Fade" effect: Instead of clearing the canvas, we draw a semi-transparent rect
-            // This creates the "Trails" look.
-            // We use the background color of the parent or a dark overlay.
-            // Assuming dark mode for this effect usually:
+            // Create trails
             ctx.fillStyle = `rgba(0, 0, 0, ${trailOpacity})`;
             ctx.fillRect(0, 0, width, height);
 
@@ -172,17 +164,23 @@ export default function NeuralBackground({
             const rect = canvas.getBoundingClientRect();
             mouse.x = e.clientX - rect.left;
             mouse.y = e.clientY - rect.top;
+            mouse.active = true;
         };
 
         const handleMouseLeave = () => {
             mouse.x = -1000;
             mouse.y = -1000;
+            mouse.active = false;
         }
 
         // Start
         init();
         animate();
 
+        // Use window listener for easier tracking if needed, 
+        // but container listener is usually safer for component isolation.
+        // For hero background, we might want full interactivity.
+        // Let's stick to container for now.
         window.addEventListener("resize", handleResize);
         container.addEventListener("mousemove", handleMouseMove);
         container.addEventListener("mouseleave", handleMouseLeave);
@@ -196,7 +194,7 @@ export default function NeuralBackground({
     }, [color, trailOpacity, particleCount, speed]);
 
     return (
-        <div ref={containerRef} className={cn("relative w-full h-full bg-black overflow-hidden select-none pointer-events-none", className)}>
+        <div ref={containerRef} className={cn("relative w-full h-full bg-black overflow-hidden pointer-events-auto", className)}>
             <canvas ref={canvasRef} className="block w-full h-full" />
         </div>
     );
