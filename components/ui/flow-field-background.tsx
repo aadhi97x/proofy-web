@@ -13,11 +13,10 @@ interface NeuralBackgroundProps {
 export default function NeuralBackground({
     className,
     color = "#00FF9C",
-    trailOpacity = 0.15, // Higher opacity for clearer trails? No, strictly controlls fade. 
-    // If we want "vivid", we want the trails to stack up a bit but not become a solid block.
-    // 0.1 is usually good for lines.
-    particleCount = 5000,
-    speed = 1.5,
+    // EXTREME SETTINGS
+    trailOpacity = 0.03, // Very low opacity = Extremely long, smooth trails
+    particleCount = 14000, // Massive amount of particles for density
+    speed = 2, // Faster movement
 }: NeuralBackgroundProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -27,7 +26,7 @@ export default function NeuralBackground({
         const container = containerRef.current;
         if (!canvas || !container) return;
 
-        const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext("2d", { alpha: false }); // Optimization
         if (!ctx) return;
 
         // --- CONFIGURATION ---
@@ -35,7 +34,6 @@ export default function NeuralBackground({
         let height = container.clientHeight;
         let particles: Particle[] = [];
         let animationFrameId: number;
-        // Track mouse influence
         let mouse = { x: -1000, y: -1000 };
 
         // --- PARTICLE CLASS ---
@@ -49,7 +47,6 @@ export default function NeuralBackground({
             age: number;
             life: number;
             baseSpeed: number;
-            history: { x: number, y: number }[];
 
             constructor() {
                 this.x = Math.random() * width;
@@ -58,54 +55,50 @@ export default function NeuralBackground({
                 this.prevY = this.y;
                 this.vx = 0;
                 this.vy = 0;
-                this.age = 0;
-                this.life = Math.random() * 200 + 100;
-                this.baseSpeed = speed * (0.8 + Math.random() * 0.4);
-                this.history = [];
+                this.age = Math.random() * 100;
+                this.life = Math.random() * 300 + 200; // Longer life
+                this.baseSpeed = speed * (0.8 + Math.random() * 0.6);
             }
 
             update() {
                 this.prevX = this.x;
                 this.prevY = this.y;
 
-                // 1. Flow Field (Simplex-ish)
-                // Adjust scale for "swirly" look
-                const zoom = 0.004;
-                const angle = (Math.cos(this.x * zoom) + Math.sin(this.y * zoom)) * Math.PI * 2;
+                // 1. Flow Field 
+                // Tighter zoom for more intricate swirls
+                const zoom = 0.005;
+                const angle = (Math.cos(this.x * zoom) + Math.sin(this.y * zoom)) * Math.PI * 3;
 
                 const forceX = Math.cos(angle);
                 const forceY = Math.sin(angle);
 
-                this.vx += forceX * 0.1 * this.baseSpeed;
-                this.vy += forceY * 0.1 * this.baseSpeed;
+                this.vx += forceX * 0.15 * this.baseSpeed;
+                this.vy += forceY * 0.15 * this.baseSpeed;
 
-                // 2. Mouse Interaction
+                // 2. Mouse Interaction (Turbulence)
                 const dx = mouse.x - this.x;
                 const dy = mouse.y - this.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                const radius = 200;
+                const radius = 300; // Large influence area
 
                 if (dist < radius) {
                     const force = (radius - dist) / radius;
                     const angleToMouse = Math.atan2(dy, dx);
 
-                    // Disperse / Breakdown
-                    // We push them away OR swirl them. "Break down and flow field around"
-                    // Let's do a turbulent push.
-                    const pushX = -Math.cos(angleToMouse) * force * 5;
-                    const pushY = -Math.sin(angleToMouse) * force * 5;
+                    // Violent repulsion + swirl
+                    const pushX = -Math.cos(angleToMouse) * force * 8;
+                    const pushY = -Math.sin(angleToMouse) * force * 8;
 
-                    // Add some noise
-                    this.vx += pushX + (Math.random() - 0.5);
-                    this.vy += pushY + (Math.random() - 0.5);
+                    this.vx += pushX;
+                    this.vy += pushY;
                 }
 
                 // 3. Physics
                 this.x += this.vx;
                 this.y += this.vy;
 
-                this.vx *= 0.94; // Friction
-                this.vy *= 0.94;
+                this.vx *= 0.95;
+                this.vy *= 0.95;
 
                 // 4. Aging
                 this.age++;
@@ -119,8 +112,8 @@ export default function NeuralBackground({
                 if (this.y < 0) { this.y = height; this.prevY = height; }
                 if (this.y > height) { this.y = 0; this.prevY = 0; }
 
-                // Anti-teleport line fix
-                if (Math.abs(this.x - this.prevX) > 50 || Math.abs(this.y - this.prevY) > 50) {
+                // Anti-teleport
+                if (Math.abs(this.x - this.prevX) > 100 || Math.abs(this.y - this.prevY) > 100) {
                     this.prevX = this.x;
                     this.prevY = this.y;
                 }
@@ -134,22 +127,19 @@ export default function NeuralBackground({
                 this.vx = 0;
                 this.vy = 0;
                 this.age = 0;
-                this.life = Math.random() * 200 + 100;
+                this.life = Math.random() * 300 + 200;
             }
 
             draw(context: CanvasRenderingContext2D) {
-                // Line drawing for continuous stroke
                 context.beginPath();
                 context.moveTo(this.prevX, this.prevY);
                 context.lineTo(this.x, this.y);
 
-                // Intensity mapping
+                // Always high alpha for intensity
                 const lifeRatio = this.age / this.life;
-                const alpha = Math.sin(lifeRatio * Math.PI); // Smooth fade in/out
+                const alpha = Math.sin(lifeRatio * Math.PI);
 
-                context.globalAlpha = alpha * 0.8; // Max alpha
-                context.strokeStyle = color;
-                context.lineWidth = 1.5;
+                context.globalAlpha = alpha; // Max intensity
                 context.stroke();
             }
         }
@@ -163,6 +153,10 @@ export default function NeuralBackground({
             canvas.style.width = `100%`;
             canvas.style.height = `100%`;
 
+            // Fill black initially
+            ctx.fillStyle = "#050505";
+            ctx.fillRect(0, 0, width, height);
+
             particles = [];
             for (let i = 0; i < particleCount; i++) {
                 particles.push(new Particle());
@@ -171,21 +165,14 @@ export default function NeuralBackground({
 
         // --- ANIMATE ---
         const animate = () => {
-            // Trail effect: clear with high transparency
+            // Very slight fade for long, glowing trails
             ctx.globalAlpha = 1;
-            ctx.fillStyle = `rgba(5, 5, 5, ${trailOpacity})`; // Matches --charcoal #050505
+            ctx.fillStyle = `rgba(5, 5, 5, ${trailOpacity})`;
             ctx.fillRect(0, 0, width, height);
 
-            // Draw all particles
-            // Batch drawing state changes for performance?
-            // Actually standard loop is fine for 5000 on modern devices.
-            // But setting strokeStyle 5000 times is slow.
-
-            ctx.fillStyle = color; // Unused for lines
             ctx.strokeStyle = color;
+            ctx.lineWidth = 1.2;
 
-            // Batching lines is tricky with varying opacity.
-            // We'll trust the browser on this for 5k.
             particles.forEach(p => {
                 p.update();
                 p.draw(ctx);
@@ -212,7 +199,7 @@ export default function NeuralBackground({
         animate();
 
         window.addEventListener("resize", handleResize);
-        window.addEventListener("mousemove", handleMouseMove); // Window to catch cursor even if fast
+        window.addEventListener("mousemove", handleMouseMove);
 
         return () => {
             window.removeEventListener("resize", handleResize);
