@@ -30,29 +30,42 @@ const WaveMaterial = shaderMaterial(
     uniform float tiles;
     varying vec2 vUv;
 
+    // Green Palette
     vec3 palette(float t) {
-      vec3 a = vec3(0.5, 0.5, 0.5);
-      vec3 b = vec3(0.5, 0.5, 0.5);
-      vec3 c = vec3(1.0, 1.0, 1.0);
-      vec3 d = vec3(0.263, 0.416, 0.557);
+      vec3 a = vec3(0.0, 0.5, 0.0); // Bias mainly green
+      vec3 b = vec3(0.0, 0.5, 0.0); // Amplitude
+      vec3 c = vec3(0.5, 1.0, 0.5); // Frequency
+      vec3 d = vec3(0.0, 0.3, 0.0); // Phase
       return a + b * cos(6.28318 * (c * t + d));
     }
 
     void main() {
-      vec2 uv = vUv * 2.0 - 1.0;
+      vec2 uv = vUv * 2.0 - 1.0; 
       vec2 uv0 = uv;
       vec3 finalColor = vec3(0.0);
 
-      uv = uv * tiles - pointer;
+      // Reduced pointer influence to avoid strong center pull
+      uv = uv * tiles; 
+      
+      // Removed the exponential falloff that created the "box" vignette
+      // float d = length(uv) * exp(-length(uv0)); 
+      
+      float d = length(uv);
 
-      float d = length(uv) * exp(-length(uv0));
-      vec3 col = palette(length(uv0) + time * 0.4);
-      d = sin(d * 8.0 + time) / 8.0;
+      vec3 col = palette(length(uv0) + time * 0.2);
+      
+      d = sin(d * 8.0 - time * 0.5) / 8.0;
       d = abs(d);
-      d = pow(0.02 / d, 2.0);
+      
+      // Sharpen the lines, make them neon
+      d = pow(0.015 / d, 1.5);
+
       finalColor += col * d;
 
-      float alpha = clamp(length(finalColor), 0.0, 1.0);
+      // Ensure it covers full screen by removing the clamp that might hide edges
+      // and boosting alpha
+      float alpha = min(length(finalColor) * 0.8, 1.0);
+      
       gl_FragColor = vec4(finalColor, alpha);
     }
   `,
