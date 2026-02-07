@@ -1,28 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { Wave } from './ui/wave.tsx';
+import { Wave } from './ui/wave';
 
 const Hero: React.FC = () => {
   const line1 = "Real media needs";
   const line2 = "AUTHENTIC PROOF.";
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 },
-    },
-  };
-
   return (
     <div className="text-center space-y-28 max-w-6xl mx-auto pt-48 pb-20 relative min-h-[800px] flex flex-col justify-center">
       {/* Wave Background */}
-      <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
+      <div className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden">
         <Wave
-          width="100%"
-          height="100%"
-          speed={0.8}
-          tiles={3}
+          className="absolute w-full h-full"
+          width={1600}
+          height={1200}
+          speed={0.5}
+          tiles={1}
+          style={{ width: '100%', height: '100%' }}
         />
       </div>
 
