@@ -8,8 +8,8 @@ const Hero: React.FC = () => {
 
   return (
     <div className="text-center space-y-28 max-w-6xl mx-auto pt-48 pb-20 relative min-h-[800px] flex flex-col justify-center overflow-visible">
-      {/* Wave Background - Extends beyond container */}
-      <div className="absolute -inset-32 z-0 pointer-events-auto">
+      {/* Wave Background - Full bleed, no borders */}
+      <div className="fixed inset-0 z-0 pointer-events-auto">
         <Wave speed={0.5} tiles={1} />
       </div>
 

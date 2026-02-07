@@ -88,8 +88,8 @@ function FullScreenQuad({
         matRef.current.uniforms.time.value += delta * speed
         matRef.current.uniforms.resolution.value.set(state.size.width, state.size.height)
 
-        // Smooth follow cursor
-        const lerpSpeed = 4
+        // Smooth follow cursor (slower = more elegant)
+        const lerpSpeed = 1.5
         smoothPointer.current.x += (mousePos.current.x - smoothPointer.current.x) * delta * lerpSpeed
         smoothPointer.current.y += (mousePos.current.y - smoothPointer.current.y) * delta * lerpSpeed
 
