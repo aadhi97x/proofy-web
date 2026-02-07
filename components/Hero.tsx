@@ -4,17 +4,17 @@ import InteractiveNeuralVortex from './ui/interactive-neural-vortex-background';
 
 const Hero: React.FC = () => {
   const line1 = "Real media needs";
-  const line2 = "AUTHENTIC PROOF.";
+  const line2 = "REAL PROOF.";
 
   return (
-    <div className="text-center space-y-28 max-w-6xl mx-auto pt-48 pb-20 relative min-h-[800px] flex flex-col justify-center">
+    <div className="text-center space-y-20 max-w-5xl mx-auto pt-32 pb-20 relative min-h-[700px] flex flex-col justify-center">
       {/* Neural Vortex Background */}
       <InteractiveNeuralVortex />
 
       {/* Content Layer */}
-      <div className="space-y-14 relative z-10 pointer-events-none">
+      <div className="space-y-10 relative z-10 pointer-events-none -mt-16">
 
-        <h1 className="text-6xl md:text-[7rem] font-black tracking-tighter leading-[0.85] flex flex-col items-center select-none shadow-black drop-shadow-2xl">
+        <h1 className="text-5xl md:text-[6rem] font-black tracking-tighter leading-[0.85] flex flex-col items-center select-none" style={{ mixBlendMode: 'difference' }}>
           <span className="flex overflow-hidden">
             {line1.split("").map((char, i) => (
               <motion.span
