@@ -167,4 +167,4 @@ const FeatureItem: React.FC<{ icon: string, label: string, desc: string, delay: 
   </motion.div>
 );
 
-export default Hero;
+
