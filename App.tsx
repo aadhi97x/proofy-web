@@ -20,7 +20,6 @@ import BatchTriage from './components/BatchTriage.tsx';
 import Sidebar from './components/Sidebar.tsx';
 import Logo from './components/Logo.tsx';
 import FloatingAssistant from './components/FloatingAssistant.tsx';
-import GravityContainer from './components/GravityContainer.tsx';
 import { analyzeMedia } from './services/geminiService.ts';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ZapOff, RefreshCw } from 'lucide-react';
@@ -32,7 +31,6 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [privacyMode, setPrivacyMode] = useState(true);
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
-  const [isGravityActive, setIsGravityActive] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('proofy_history');
@@ -138,123 +136,85 @@ const App: React.FC = () => {
       />
 
       <div className="flex-grow flex flex-col relative z-10 overflow-x-hidden pt-0">
-        <main className={`flex-grow container mx-auto px-6 md:px-12 pt-24 pb-24 max-w-7xl ${isGravityActive ? 'h-screen w-screen max-w-none px-0 pt-0 pb-0' : ''}`}>
-          <GravityContainer isActive={isGravityActive}>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentView}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
-                className="w-full"
-              >
-                {currentView === View.HOME && (
-                  <div className="space-y-48">
-                    <section id="hero-flow" className="pt-12">
-                      <Hero />
-                      <TrustStrip />
-                    </section>
+        <main className="flex-grow container mx-auto px-6 md:px-12 pt-24 pb-24 max-w-7xl">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentView}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+              className="w-full"
+            >
+              {currentView === View.HOME && (
+                <div className="space-y-48">
+                  <section id="hero-flow" className="pt-12">
+                    <Hero />
+                    <TrustStrip />
+                  </section>
 
-                    <div className="max-w-6xl mx-auto space-y-48">
-                      <UploadZone onUpload={handleUpload} />
+                  <div className="max-w-6xl mx-auto space-y-48">
+                    <UploadZone onUpload={handleUpload} />
 
-                      {error && (
-                        <motion.div
-                          initial={{ scale: 0.9, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          className="p-12 glass border border-danger/40 rounded-[3rem] flex flex-col md:flex-row items-center gap-10 text-danger shadow-[0_30px_60px_rgba(255,45,85,0.1)] backdrop-blur-3xl relative overflow-hidden"
-                        >
-                          <div className="absolute inset-0 bg-danger/5 animate-pulse"></div>
-                          <ZapOff size={48} className="shrink-0 relative z-10" />
-                          <div className="flex-grow text-center md:text-left relative z-10 space-y-2">
-                            <h4 className="font-black italic uppercase tracking-[0.4em] text-lg mb-1">Neural Interruption</h4>
-                            <p className="text-base opacity-60 italic font-light leading-relaxed max-w-xl">{error}</p>
-                            {error.includes("API Key") && (
-                              <button
-                                onClick={openKeySelection}
-                                className="mt-6 px-10 py-4 bg-danger text-white font-black rounded-2xl text-[11px] uppercase tracking-widest hover:bg-red-400 transition-all shadow-xl hover:scale-105 active:scale-95"
-                              >
-                                Authenticate Vector Key
-                              </button>
-                            )}
-                          </div>
-                        </motion.div>
-                      )}
+                    {error && (
+                      <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="p-12 glass border border-danger/40 rounded-[3rem] flex flex-col md:flex-row items-center gap-10 text-danger shadow-[0_30px_60px_rgba(255,45,85,0.1)] backdrop-blur-3xl relative overflow-hidden"
+                      >
+                        <div className="absolute inset-0 bg-danger/5 animate-pulse"></div>
+                        <ZapOff size={48} className="shrink-0 relative z-10" />
+                        <div className="flex-grow text-center md:text-left relative z-10 space-y-2">
+                          <h4 className="font-black italic uppercase tracking-[0.4em] text-lg mb-1">Neural Interruption</h4>
+                          <p className="text-base opacity-60 italic font-light leading-relaxed max-w-xl">{error}</p>
+                          {error.includes("API Key") && (
+                            <button
+                              onClick={openKeySelection}
+                              className="mt-6 px-10 py-4 bg-danger text-white font-black rounded-2xl text-[11px] uppercase tracking-widest hover:bg-red-400 transition-all shadow-xl hover:scale-105 active:scale-95"
+                            >
+                              Authenticate Vector Key
+                            </button>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                        <QuickToolCard
-                          title="Mass Triage"
-                          description="Process multiple suspected streams simultaneously through the neural sifter."
-                          icon="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25"
-                          color="text-neon"
-                          onClick={() => setCurrentView(View.BATCH_TRIAGE)}
-                        />
-                        <QuickToolCard
-                          title="Reverse Grounding"
-                          description="Identify digital fabrications and trace back to latent archival seeds."
-                          icon="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                          color="text-cyber"
-                          onClick={() => setCurrentView(View.REVERSE_GROUNDING)}
-                        />
-                      </div>
-
-                      <HowItWorks />
-                      <ForensicDeepDive />
-                      <ResultsPreview />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                      <QuickToolCard
+                        title="Mass Triage"
+                        description="Process multiple suspected streams simultaneously through the neural sifter."
+                        icon="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25"
+                        color="text-neon"
+                        onClick={() => setCurrentView(View.BATCH_TRIAGE)}
+                      />
+                      <QuickToolCard
+                        title="Reverse Grounding"
+                        description="Identify digital fabrications and trace back to latent archival seeds."
+                        icon="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        color="text-cyber"
+                        onClick={() => setCurrentView(View.REVERSE_GROUNDING)}
+                      />
                     </div>
+
+                    <HowItWorks />
+                    <ForensicDeepDive />
+                    <ResultsPreview />
                   </div>
-                )}
+                </div>
+              )}
 
-                {currentView === View.PROCESSING && <ProcessingScreen />}
-                {currentView === View.RESULTS && analysisResult && <ResultsScreen result={analysisResult} onReupload={reset} onOpenReport={() => setCurrentView(View.JUDICIAL_REPORT)} onOpenTimeline={() => setCurrentView(View.FORENSIC_TIMELINE)} />}
-                {currentView === View.JUDICIAL_REPORT && analysisResult && <JudicialReport result={analysisResult} onBack={() => setCurrentView(View.RESULTS)} />}
-                {currentView === View.BATCH_TRIAGE && <BatchTriage onBack={reset} onResultSelect={(res) => { setAnalysisResult(res); setCurrentView(View.RESULTS); }} />}
-                {currentView === View.REVERSE_GROUNDING && <ReverseGrounding onBack={reset} />}
-                {currentView === View.TEXT_LAB && <TextInterrogator onBack={reset} />}
-                {currentView === View.LIVE && <LiveScanner onBack={reset} onResult={(res) => { setAnalysisResult(res); saveToHistory(res); setCurrentView(View.RESULTS); }} />}
-                {currentView === View.HISTORY && <HistoryPanel history={history} onSelect={(res) => { setAnalysisResult(res); setCurrentView(View.RESULTS); }} />}
-                {currentView === View.SIGNAL_LIBRARY && <SignalLibrary />}
-              </motion.div>
-            </AnimatePresence>
-          </GravityContainer>
+              {currentView === View.PROCESSING && <ProcessingScreen />}
+              {currentView === View.RESULTS && analysisResult && <ResultsScreen result={analysisResult} onReupload={reset} onOpenReport={() => setCurrentView(View.JUDICIAL_REPORT)} onOpenTimeline={() => setCurrentView(View.FORENSIC_TIMELINE)} />}
+              {currentView === View.JUDICIAL_REPORT && analysisResult && <JudicialReport result={analysisResult} onBack={() => setCurrentView(View.RESULTS)} />}
+              {currentView === View.BATCH_TRIAGE && <BatchTriage onBack={reset} onResultSelect={(res) => { setAnalysisResult(res); setCurrentView(View.RESULTS); }} />}
+              {currentView === View.REVERSE_GROUNDING && <ReverseGrounding onBack={reset} />}
+              {currentView === View.TEXT_LAB && <TextInterrogator onBack={reset} />}
+              {currentView === View.LIVE && <LiveScanner onBack={reset} onResult={(res) => { setAnalysisResult(res); saveToHistory(res); setCurrentView(View.RESULTS); }} />}
+              {currentView === View.HISTORY && <HistoryPanel history={history} onSelect={(res) => { setAnalysisResult(res); setCurrentView(View.RESULTS); }} />}
+              {currentView === View.SIGNAL_LIBRARY && <SignalLibrary />}
+            </motion.div>
+          </AnimatePresence>
         </main>
-      </div>
-
-      <div className="fixed bottom-10 right-10 z-[100] flex flex-col gap-5 items-end">
-        <AnimatePresence mode="wait">
-          {!isGravityActive ? (
-            <motion.button
-              key="destabilize"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              onClick={() => setIsGravityActive(true)}
-              className="p-6 bg-danger/5 backdrop-blur-3xl border border-danger/20 text-danger rounded-[2rem] hover:bg-danger hover:text-white transition-all group flex items-center gap-4 shadow-2xl overflow-hidden"
-            >
-              <ZapOff size={24} className="group-hover:animate-pulse" />
-              <div className="flex flex-col items-start max-w-0 group-hover:max-w-[300px] transition-all duration-700 opacity-0 group-hover:opacity-100">
-                <span className="text-[11px] font-black uppercase tracking-[0.4em] whitespace-nowrap">Collapse Reality</span>
-                <span className="text-[8px] font-mono opacity-50 uppercase tracking-tighter whitespace-nowrap">Security_Override: 0xFX_1</span>
-              </div>
-            </motion.button>
-          ) : (
-            <motion.button
-              key="stabilize"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              onClick={() => setIsGravityActive(false)}
-              className="p-6 bg-neon/5 backdrop-blur-3xl border border-neon/30 text-neon rounded-[2.5rem] hover:bg-neon hover:text-charcoal transition-all group flex items-center gap-4 shadow-[0_0_50px_rgba(0,255,156,0.2)]"
-            >
-              <RefreshCw size={24} className="animate-spin-slow" />
-              <div className="flex flex-col items-start max-w-0 group-hover:max-w-[300px] transition-all duration-700 opacity-0 group-hover:opacity-100">
-                <span className="text-[11px] font-black uppercase tracking-[0.4em] whitespace-nowrap">Restore Sovereignty</span>
-                <span className="text-[8px] font-mono opacity-50 uppercase tracking-tighter whitespace-nowrap">System_Stablized</span>
-              </div>
-            </motion.button>
-          )}
-        </AnimatePresence>
       </div>
 
       <FloatingAssistant currentView={currentView} analysisResult={analysisResult} />
