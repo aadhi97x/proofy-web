@@ -7,14 +7,14 @@ const Hero: React.FC = () => {
   const line2 = "REAL PROOF.";
 
   return (
-    <div className="text-center space-y-16 max-w-5xl mx-auto relative min-h-screen flex flex-col justify-center">
+    <div className="text-center space-y-16 max-w-5xl mx-auto relative min-h-screen flex flex-col items-center pt-[15vh]" style={{ isolation: 'isolate' }}>
       {/* Neural Vortex Background */}
       <InteractiveNeuralVortex />
 
       {/* Content Layer */}
-      <div className="space-y-10 relative z-10 pointer-events-none">
+      <div className="space-y-10 pointer-events-none">
 
-        <h1 className="text-5xl md:text-[6rem] font-black tracking-tighter leading-[0.85] flex flex-col items-center select-none" style={{ mixBlendMode: 'difference' }}>
+        <h1 className="text-5xl md:text-[6rem] font-black tracking-tighter leading-[0.85] flex flex-col items-center select-none" style={{ mixBlendMode: 'difference', position: 'relative', zIndex: 1 }}>
           <span className="flex overflow-hidden">
             {line1.split("").map((char, i) => (
               <motion.span
