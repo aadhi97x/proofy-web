@@ -1,14 +1,13 @@
 /*
   Single-file Wave component using @react-three/fiber and @react-three/drei.
-  - Transparent background
   - Full screen coverage
-  - Smooth pointer interpolation
+  - Follows cursor smoothly
 */
 
 "use client"
 
 import type React from "react"
-import { useRef, useState, Suspense } from "react"
+import { useRef, useState, Suspense, useEffect } from "react"
 import * as THREE from "three"
 import { Canvas, extend, useFrame, useThree } from "@react-three/fiber"
 import { shaderMaterial } from "@react-three/drei"
@@ -24,10 +23,7 @@ const WaveMaterial = shaderMaterial(
   /* glsl */ `
     varying vec2 vUv;
     void main() {
-      vec4 modelPosition = modelMatrix * vec4(position, 1.0);
-      vec4 viewPosition = viewMatrix * modelPosition;
-      vec4 projectionPosition = projectionMatrix * viewPosition;
-      gl_Position = projectionPosition;
+      gl_Position = vec4(position.xy, 0.0, 1.0);
       vUv = uv;
     }
   `,
@@ -39,7 +35,6 @@ const WaveMaterial = shaderMaterial(
     varying vec2 vUv;
 
     vec3 palette(float t) {
-      // Saturated Green + White palette for #00FF9C neon theme
       vec3 a = vec3(0.0, 0.7, 0.4);
       vec3 b = vec3(0.2, 0.5, 0.3);
       vec3 c = vec3(1.0, 1.0, 1.0);
@@ -72,67 +67,41 @@ extend({ WaveMaterial })
 export type WaveProps = {
     speed?: number
     tiles?: number
-    pointer?: { x: number; y: number }
-    disablePointerTracking?: boolean
-    dpr?: number | [number, number]
-    onPointerMove?: (e: React.PointerEvent<HTMLDivElement>) => void
     className?: string
     style?: React.CSSProperties
 }
 
-function WaveQuad({
+function FullScreenQuad({
     speed = 1,
     tiles = 1.5,
-    pointerOverride,
-    trackPointer = true,
+    mousePos,
 }: {
     speed?: number
     tiles?: number
-    pointerOverride?: { x: number; y: number }
-    trackPointer?: boolean
+    mousePos: React.MutableRefObject<{ x: number; y: number }>
 }) {
     const matRef = useRef<THREE.ShaderMaterial>(null)
-    const meshRef = useRef<THREE.Mesh>(null)
-    const smoothPointer = useRef(new THREE.Vector2(0, 0))
-    const { viewport } = useThree()
+    const smoothPointer = useRef({ x: 0, y: 0 })
 
     useFrame((state, delta) => {
         if (!matRef.current) return
         matRef.current.uniforms.time.value += delta * speed
-        matRef.current.uniforms.resolution.value.set(
-            state.size.width,
-            state.size.height,
-        )
+        matRef.current.uniforms.resolution.value.set(state.size.width, state.size.height)
 
-        // Get target pointer
-        let targetX = 0
-        let targetY = 0
+        // Smooth follow cursor
+        const lerpSpeed = 4
+        smoothPointer.current.x += (mousePos.current.x - smoothPointer.current.x) * delta * lerpSpeed
+        smoothPointer.current.y += (mousePos.current.y - smoothPointer.current.y) * delta * lerpSpeed
 
-        if (pointerOverride) {
-            targetX = pointerOverride.x
-            targetY = pointerOverride.y
-        } else if (trackPointer) {
-            targetX = state.pointer.x
-            targetY = state.pointer.y
-        }
-
-        // Smooth lerp
-        const lerpSpeed = 5
-        smoothPointer.current.x += (targetX - smoothPointer.current.x) * delta * lerpSpeed
-        smoothPointer.current.y += (targetY - smoothPointer.current.y) * delta * lerpSpeed
-
-        matRef.current.uniforms.pointer.value.set(
-            smoothPointer.current.x,
-            smoothPointer.current.y
-        )
+        matRef.current.uniforms.pointer.value.set(smoothPointer.current.x, smoothPointer.current.y)
         matRef.current.uniforms.tiles.value = tiles
     })
 
     return (
-        <mesh ref={meshRef} scale={[viewport.width, viewport.height, 1]}>
-            <planeGeometry args={[1, 1]} />
+        <mesh>
+            <planeGeometry args={[2, 2]} />
             {/* @ts-expect-error - intrinsic element added via extend */}
-            <waveMaterial ref={matRef} transparent />
+            <waveMaterial ref={matRef} transparent depthTest={false} depthWrite={false} />
         </mesh>
     )
 }
@@ -140,53 +109,56 @@ function WaveQuad({
 export function Wave({
     speed = 1,
     tiles = 1.5,
-    pointer: pointerOverride,
-    disablePointerTracking = false,
-    dpr = [1, 2],
-    onPointerMove,
     className,
     style,
 }: WaveProps) {
-    const [localPointer, setLocalPointer] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
+    const containerRef = useRef<HTMLDivElement>(null)
+    const mousePos = useRef({ x: 0, y: 0 })
+
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!containerRef.current) return
+            const rect = containerRef.current.getBoundingClientRect()
+            mousePos.current.x = ((e.clientX - rect.left) / rect.width) * 2 - 1
+            mousePos.current.y = -(((e.clientY - rect.top) / rect.height) * 2 - 1)
+        }
+
+        window.addEventListener("mousemove", handleMouseMove)
+        return () => window.removeEventListener("mousemove", handleMouseMove)
+    }, [])
 
     return (
         <div
+            ref={containerRef}
             className={className}
             style={{
                 position: "absolute",
-                inset: 0,
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                width: "100%",
+                height: "100%",
                 overflow: "hidden",
+                pointerEvents: "none",
                 ...style,
-            }}
-            onPointerMove={(e) => {
-                if (!disablePointerTracking && !pointerOverride) {
-                    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect()
-                    const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1
-                    const ny = -(((e.clientY - rect.top) / rect.height) * 2 - 1)
-                    setLocalPointer({ x: nx, y: ny })
-                }
-                onPointerMove?.(e)
             }}
         >
             <Canvas
-                dpr={dpr}
+                dpr={[1, 2]}
                 frameloop="always"
-                gl={{ antialias: true, alpha: true }}
-                orthographic
-                camera={{ zoom: 1, position: [0, 0, 100] }}
+                gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
                 style={{
                     background: "transparent",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
                     width: "100%",
-                    height: "100%"
+                    height: "100%",
                 }}
             >
                 <Suspense fallback={null}>
-                    <WaveQuad
-                        speed={speed}
-                        tiles={tiles}
-                        pointerOverride={pointerOverride ?? localPointer}
-                        trackPointer={!disablePointerTracking && !pointerOverride}
-                    />
+                    <FullScreenQuad speed={speed} tiles={tiles} mousePos={mousePos} />
                 </Suspense>
             </Canvas>
         </div>

@@ -7,13 +7,11 @@ const Hero: React.FC = () => {
   const line2 = "AUTHENTIC PROOF.";
 
   return (
-    <div className="text-center space-y-28 max-w-6xl mx-auto pt-48 pb-20 relative min-h-[800px] flex flex-col justify-center">
-      {/* Wave Background - Full Coverage */}
-      <Wave
-        className="!absolute !inset-0 z-0"
-        speed={0.5}
-        tiles={1}
-      />
+    <div className="text-center space-y-28 max-w-6xl mx-auto pt-48 pb-20 relative min-h-[800px] flex flex-col justify-center overflow-visible">
+      {/* Wave Background - Extends beyond container */}
+      <div className="absolute -inset-32 z-0 pointer-events-auto">
+        <Wave speed={0.5} tiles={1} />
+      </div>
 
       {/* Content Layer */}
       <div className="space-y-14 relative z-10 pointer-events-none">
