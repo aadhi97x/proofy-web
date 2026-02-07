@@ -2,7 +2,7 @@
   Single-file Wave component using @react-three/fiber and @react-three/drei.
   - Transparent background
   - Centered plane in scene
-  - All inline, no external CSS
+  - Smooth pointer interpolation
 */
 
 "use client"
@@ -39,16 +39,16 @@ const WaveMaterial = shaderMaterial(
     varying vec2 vUv;
 
     vec3 palette(float t) {
-      // Green + White palette matching #00FF9C neon theme
-      vec3 a = vec3(0.2, 0.6, 0.4);   // Base green tint
-      vec3 b = vec3(0.3, 0.5, 0.4);   // Amplitude
+      // Saturated Green + White palette for #00FF9C neon theme
+      vec3 a = vec3(0.0, 0.7, 0.4);   // Strong green base
+      vec3 b = vec3(0.2, 0.5, 0.3);   // Amplitude
       vec3 c = vec3(1.0, 1.0, 1.0);   // Frequency
-      vec3 d = vec3(0.0, 0.33, 0.17); // Phase offset for green
+      vec3 d = vec3(0.0, 0.25, 0.1);  // Phase - more green shift
       return a + b * cos(6.28318 * (c * t + d));
     }
 
     void main() {
-      vec2 uv = vUv * 2.0 - 1.0;  // -1..1 centered coords
+      vec2 uv = vUv * 2.0 - 1.0;
       vec2 uv0 = uv;
       vec3 finalColor = vec3(0.0);
 
@@ -70,8 +70,8 @@ const WaveMaterial = shaderMaterial(
 extend({ WaveMaterial })
 
 export type WaveProps = {
-    width?: number
-    height?: number
+    width?: number | string
+    height?: number | string
     speed?: number
     tiles?: number
     pointer?: { x: number; y: number }
@@ -85,19 +85,17 @@ export type WaveProps = {
 function WaveQuad({
     speed = 1,
     tiles = 1.5,
-    width = 600,
-    height = 400,
     pointerOverride,
     trackPointer = true,
 }: {
     speed?: number
     tiles?: number
-    width?: number
-    height?: number
     pointerOverride?: { x: number; y: number }
     trackPointer?: boolean
 }) {
     const matRef = useRef<THREE.ShaderMaterial>(null)
+    // Smoothed pointer position for seamless transitions
+    const smoothPointer = useRef(new THREE.Vector2(0, 0))
 
     useFrame((state, delta) => {
         if (!matRef.current) return
@@ -107,22 +105,36 @@ function WaveQuad({
             state.size.height,
         )
 
+        // Get target pointer position
+        let targetX = 0
+        let targetY = 0
+
         if (pointerOverride) {
-            matRef.current.uniforms.pointer.value.set(pointerOverride.x, pointerOverride.y)
+            targetX = pointerOverride.x
+            targetY = pointerOverride.y
         } else if (trackPointer) {
-            matRef.current.uniforms.pointer.value.set(state.pointer.x, state.pointer.y)
+            targetX = state.pointer.x
+            targetY = state.pointer.y
         }
 
+        // Smooth interpolation (lerp) for seamless movement
+        const lerpFactor = 1 - Math.pow(0.001, delta) // Smooth easing
+        smoothPointer.current.x += (targetX - smoothPointer.current.x) * lerpFactor * 3
+        smoothPointer.current.y += (targetY - smoothPointer.current.y) * lerpFactor * 3
+
+        matRef.current.uniforms.pointer.value.set(
+            smoothPointer.current.x,
+            smoothPointer.current.y
+        )
         matRef.current.uniforms.tiles.value = tiles
     })
 
     return (
         <group>
-            {/* Centered camera looking straight at origin */}
             <OrthographicCamera makeDefault position={[0, 0, 10]} />
             <mesh position={[0, 0, 0]}>
-                {/* Fixed-size plane in center */}
-                <planeGeometry args={[width, height]} />
+                {/* Use viewport-sized plane */}
+                <planeGeometry args={[2, 2]} />
                 {/* @ts-expect-error - intrinsic element added via extend */}
                 <waveMaterial ref={matRef} transparent />
             </mesh>
@@ -131,8 +143,8 @@ function WaveQuad({
 }
 
 export function Wave({
-    width = 1200,
-    height = 1000,
+    width = "100%",
+    height = "100%",
     speed = 1,
     tiles = 1.5,
     pointer: pointerOverride,
@@ -142,7 +154,7 @@ export function Wave({
     className,
     style,
 }: WaveProps) {
-    const [localPointer, setLocalPointer] = useState<{ x: number; y: number } | null>(null)
+    const [localPointer, setLocalPointer] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
 
     return (
         <div
@@ -150,9 +162,8 @@ export function Wave({
             style={{
                 width,
                 height,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
+                position: "absolute",
+                inset: 0,
                 overflow: "hidden",
                 ...style,
             }}
@@ -170,16 +181,19 @@ export function Wave({
                 dpr={dpr}
                 frameloop="always"
                 gl={{ antialias: true, alpha: true }}
-                camera={{ position: [0, 0, 10] }}
-                style={{ background: "transparent" }}
+                style={{
+                    background: "transparent",
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%"
+                }}
             >
                 <Suspense fallback={null}>
                     <WaveQuad
                         speed={speed}
                         tiles={tiles}
-                        width={width}
-                        height={height}
-                        pointerOverride={pointerOverride ?? localPointer ?? undefined}
+                        pointerOverride={pointerOverride ?? localPointer}
                         trackPointer={!disablePointerTracking && !pointerOverride}
                     />
                 </Suspense>
