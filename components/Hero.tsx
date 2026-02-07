@@ -17,7 +17,7 @@ const Hero: React.FC = () => {
   return (
     <div className="text-center space-y-28 max-w-6xl mx-auto pt-48 pb-20 relative min-h-[800px] flex flex-col justify-center">
       {/* Neural Flow Field Background */}
-      <div className="absolute inset-0 z-0 opacity-60">
+      <div className="absolute inset-0 z-0">
         <NeuralBackground
           color="#00FF9C"
           trailOpacity={0.2}

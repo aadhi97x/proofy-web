@@ -13,9 +13,11 @@ interface NeuralBackgroundProps {
 export default function NeuralBackground({
     className,
     color = "#00FF9C",
-    trailOpacity = 0.08, // Lower opacity = longer, smoother trails
-    particleCount = 2000, // Significantly increased for "intense" look
-    speed = 1.2,
+    trailOpacity = 0.15, // Higher opacity for clearer trails? No, strictly controlls fade. 
+    // If we want "vivid", we want the trails to stack up a bit but not become a solid block.
+    // 0.1 is usually good for lines.
+    particleCount = 5000,
+    speed = 1.5,
 }: NeuralBackgroundProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -33,105 +35,133 @@ export default function NeuralBackground({
         let height = container.clientHeight;
         let particles: Particle[] = [];
         let animationFrameId: number;
-        let mouse = { x: -1000, y: -1000, active: false };
+        // Track mouse influence
+        let mouse = { x: -1000, y: -1000 };
 
         // --- PARTICLE CLASS ---
         class Particle {
             x: number;
             y: number;
+            prevX: number;
+            prevY: number;
             vx: number;
             vy: number;
             age: number;
             life: number;
             baseSpeed: number;
+            history: { x: number, y: number }[];
 
             constructor() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
+                this.prevX = this.x;
+                this.prevY = this.y;
                 this.vx = 0;
                 this.vy = 0;
                 this.age = 0;
-                this.life = Math.random() * 300 + 100;
-                this.baseSpeed = speed * (0.5 + Math.random() * 0.5); // Varied speeds
+                this.life = Math.random() * 200 + 100;
+                this.baseSpeed = speed * (0.8 + Math.random() * 0.4);
+                this.history = [];
             }
 
             update() {
-                // 1. Flow Field Math (Simplex-ish noise)
-                // We calculate an angle based on position to create the "flow"
-                // Increased frequency for more "swirly" vivid look
-                const angle = (Math.cos(this.x * 0.003) + Math.sin(this.y * 0.003)) * Math.PI * 1.5;
+                this.prevX = this.x;
+                this.prevY = this.y;
 
-                // 2. Add force from flow field
+                // 1. Flow Field (Simplex-ish)
+                // Adjust scale for "swirly" look
+                const zoom = 0.004;
+                const angle = (Math.cos(this.x * zoom) + Math.sin(this.y * zoom)) * Math.PI * 2;
+
                 const forceX = Math.cos(angle);
                 const forceY = Math.sin(angle);
 
                 this.vx += forceX * 0.1 * this.baseSpeed;
                 this.vy += forceY * 0.1 * this.baseSpeed;
 
-                // 3. Strong Mouse Repulsion / Breakdown
-                // "Break down and flow field around the cursor"
+                // 2. Mouse Interaction
                 const dx = mouse.x - this.x;
                 const dy = mouse.y - this.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                const interactionRadius = 250; // Larger radius
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const radius = 200;
 
-                if (distance < interactionRadius) {
-                    const force = (interactionRadius - distance) / interactionRadius;
-                    // Strong repulsion
-                    const pushStrength = 2.5;
-                    this.vx -= (dx / distance) * force * pushStrength;
-                    this.vy -= (dy / distance) * force * pushStrength;
+                if (dist < radius) {
+                    const force = (radius - dist) / radius;
+                    const angleToMouse = Math.atan2(dy, dx);
 
-                    // Add "chaos" (breakdown) to velocity when near mouse
-                    this.vx += (Math.random() - 0.5) * force * 1.5;
-                    this.vy += (Math.random() - 0.5) * force * 1.5;
+                    // Disperse / Breakdown
+                    // We push them away OR swirl them. "Break down and flow field around"
+                    // Let's do a turbulent push.
+                    const pushX = -Math.cos(angleToMouse) * force * 5;
+                    const pushY = -Math.sin(angleToMouse) * force * 5;
+
+                    // Add some noise
+                    this.vx += pushX + (Math.random() - 0.5);
+                    this.vy += pushY + (Math.random() - 0.5);
                 }
 
-                // 4. Apply Velocity & Friction
+                // 3. Physics
                 this.x += this.vx;
                 this.y += this.vy;
-                this.vx *= 0.96;
-                this.vy *= 0.96;
 
-                // 5. Aging
+                this.vx *= 0.94; // Friction
+                this.vy *= 0.94;
+
+                // 4. Aging
                 this.age++;
                 if (this.age > this.life) {
                     this.reset();
                 }
 
-                // 6. Wrap around screen
-                if (this.x < 0) this.x = width;
-                if (this.x > width) this.x = 0;
-                if (this.y < 0) this.y = height;
-                if (this.y > height) this.y = 0;
+                // 5. Wrap
+                if (this.x < 0) { this.x = width; this.prevX = width; }
+                if (this.x > width) { this.x = 0; this.prevX = 0; }
+                if (this.y < 0) { this.y = height; this.prevY = height; }
+                if (this.y > height) { this.y = 0; this.prevY = 0; }
+
+                // Anti-teleport line fix
+                if (Math.abs(this.x - this.prevX) > 50 || Math.abs(this.y - this.prevY) > 50) {
+                    this.prevX = this.x;
+                    this.prevY = this.y;
+                }
             }
 
             reset() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
+                this.prevX = this.x;
+                this.prevY = this.y;
                 this.vx = 0;
                 this.vy = 0;
                 this.age = 0;
-                this.life = Math.random() * 300 + 100;
+                this.life = Math.random() * 200 + 100;
             }
 
             draw(context: CanvasRenderingContext2D) {
-                // Vividness: Higher opacity for new particles
-                const alpha = Math.min(1, (1 - Math.abs((this.age / this.life) - 0.5) * 2) + 0.2);
-                context.globalAlpha = alpha;
-                context.fillStyle = color;
-                context.fillRect(this.x, this.y, 1.2, 1.2);
+                // Line drawing for continuous stroke
+                context.beginPath();
+                context.moveTo(this.prevX, this.prevY);
+                context.lineTo(this.x, this.y);
+
+                // Intensity mapping
+                const lifeRatio = this.age / this.life;
+                const alpha = Math.sin(lifeRatio * Math.PI); // Smooth fade in/out
+
+                context.globalAlpha = alpha * 0.8; // Max alpha
+                context.strokeStyle = color;
+                context.lineWidth = 1.5;
+                context.stroke();
             }
         }
 
-        // --- INITIALIZATION ---
+        // --- INIT ---
         const init = () => {
             const dpr = window.devicePixelRatio || 1;
             canvas.width = width * dpr;
             canvas.height = height * dpr;
             ctx.scale(dpr, dpr);
-            canvas.style.width = `${width}px`;
-            canvas.style.height = `${height}px`;
+            canvas.style.width = `100%`;
+            canvas.style.height = `100%`;
 
             particles = [];
             for (let i = 0; i < particleCount; i++) {
@@ -139,13 +169,24 @@ export default function NeuralBackground({
             }
         };
 
-        // --- ANIMATION LOOP ---
+        // --- ANIMATE ---
         const animate = () => {
-            // Create trails
-            ctx.fillStyle = `rgba(0, 0, 0, ${trailOpacity})`;
+            // Trail effect: clear with high transparency
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = `rgba(5, 5, 5, ${trailOpacity})`; // Matches --charcoal #050505
             ctx.fillRect(0, 0, width, height);
 
-            particles.forEach((p) => {
+            // Draw all particles
+            // Batch drawing state changes for performance?
+            // Actually standard loop is fine for 5000 on modern devices.
+            // But setting strokeStyle 5000 times is slow.
+
+            ctx.fillStyle = color; // Unused for lines
+            ctx.strokeStyle = color;
+
+            // Batching lines is tricky with varying opacity.
+            // We'll trust the browser on this for 5k.
+            particles.forEach(p => {
                 p.update();
                 p.draw(ctx);
             });
@@ -153,7 +194,7 @@ export default function NeuralBackground({
             animationFrameId = requestAnimationFrame(animate);
         };
 
-        // --- EVENT LISTENERS ---
+        // --- EVENT ---
         const handleResize = () => {
             width = container.clientWidth;
             height = container.clientHeight;
@@ -161,40 +202,27 @@ export default function NeuralBackground({
         };
 
         const handleMouseMove = (e: MouseEvent) => {
-            const rect = canvas.getBoundingClientRect();
+            const rect = container.getBoundingClientRect();
             mouse.x = e.clientX - rect.left;
             mouse.y = e.clientY - rect.top;
-            mouse.active = true;
         };
-
-        const handleMouseLeave = () => {
-            mouse.x = -1000;
-            mouse.y = -1000;
-            mouse.active = false;
-        }
 
         // Start
         init();
         animate();
 
-        // Use window listener for easier tracking if needed, 
-        // but container listener is usually safer for component isolation.
-        // For hero background, we might want full interactivity.
-        // Let's stick to container for now.
         window.addEventListener("resize", handleResize);
-        container.addEventListener("mousemove", handleMouseMove);
-        container.addEventListener("mouseleave", handleMouseLeave);
+        window.addEventListener("mousemove", handleMouseMove); // Window to catch cursor even if fast
 
         return () => {
             window.removeEventListener("resize", handleResize);
-            container.removeEventListener("mousemove", handleMouseMove);
-            container.removeEventListener("mouseleave", handleMouseLeave);
+            window.removeEventListener("mousemove", handleMouseMove);
             cancelAnimationFrame(animationFrameId);
         };
-    }, [color, trailOpacity, particleCount, speed]);
+    }, [color, particleCount, speed, trailOpacity]);
 
     return (
-        <div ref={containerRef} className={cn("relative w-full h-full bg-black overflow-hidden pointer-events-auto", className)}>
+        <div ref={containerRef} className={cn("relative w-full h-full bg-[#050505] overflow-hidden", className)}>
             <canvas ref={canvasRef} className="block w-full h-full" />
         </div>
     );
