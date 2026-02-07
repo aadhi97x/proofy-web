@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, Suspense } from "react"
 import * as THREE from "three"
-import { Canvas, extend, useFrame, ReactThreeFiber } from "@react-three/fiber"
+import { Canvas, extend, useFrame, useThree, ReactThreeFiber } from "@react-three/fiber"
 import { shaderMaterial, OrthographicCamera } from "@react-three/drei"
 
 // Wave shader material
