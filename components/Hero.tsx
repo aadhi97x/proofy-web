@@ -12,7 +12,7 @@ const Hero: React.FC = () => {
       <InteractiveNeuralVortex />
 
       {/* Content Layer */}
-      <div className="space-y-10 pointer-events-none -mt-24">
+      <div className="space-y-10 pointer-events-none -mt-32">
 
         <h1 className="text-5xl md:text-[6rem] font-black tracking-tighter leading-[0.85] flex flex-col items-center select-none">
           <span className="flex overflow-hidden">
