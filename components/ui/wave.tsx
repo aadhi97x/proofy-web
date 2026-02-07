@@ -1,7 +1,7 @@
 /*
   Single-file Wave component using @react-three/fiber and @react-three/drei.
   - Full screen coverage
-  - Flowing waves that react to cursor
+  - Bright glowing waves that react to cursor
 */
 
 "use client"
@@ -33,10 +33,10 @@ const WaveMaterial = shaderMaterial(
     varying vec2 vUv;
 
     vec3 palette(float t) {
-      vec3 a = vec3(0.0, 0.6, 0.35);
+      vec3 a = vec3(0.0, 0.7, 0.4);
       vec3 b = vec3(0.3, 0.5, 0.4);
       vec3 c = vec3(1.0, 1.0, 1.0);
-      vec3 d = vec3(0.0, 0.2, 0.1);
+      vec3 d = vec3(0.0, 0.25, 0.1);
       return a + b * cos(6.28318 * (c * t + d));
     }
 
@@ -47,25 +47,32 @@ const WaveMaterial = shaderMaterial(
       
       vec3 finalColor = vec3(0.0);
       
-      // Create multiple flowing wave bands
-      for(float i = 0.0; i < 4.0; i++) {
-        float offset = i * 0.8;
+      // Create multiple thick glowing wave bands
+      for(float i = 0.0; i < 3.0; i++) {
+        float offset = i * 1.2;
         
-        // Compute wave position influenced by cursor
-        float waveY = sin(p.x * 2.0 + time * 0.5 + offset + pointer.x * 0.5) * 0.3;
-        waveY += cos(p.x * 1.5 - time * 0.3 + i) * 0.2;
-        waveY += pointer.y * 0.2;
+        // Wave position with cursor influence
+        float waveY = sin(p.x * 1.5 + time * 0.6 + offset + pointer.x * 0.8) * 0.5;
+        waveY += cos(p.x * 0.8 - time * 0.4 + i * 2.0) * 0.3;
+        waveY += pointer.y * 0.3;
         
-        // Distance from wave center line
-        float dist = abs(p.y - waveY + (i - 1.5) * 0.4);
+        // Vertical offset for each wave band
+        float yOffset = (i - 1.0) * 0.8;
         
-        // Create glowing band
-        float intensity = 0.015 / (dist + 0.01);
-        intensity = pow(intensity, 1.5);
+        // Distance to wave - THICK bands
+        float dist = abs(p.y - waveY + yOffset);
         
-        vec3 col = palette(i * 0.25 + time * 0.1 + p.x * 0.2);
-        finalColor += col * intensity * 0.15;
+        // BRIGHT glow - much more intense
+        float glow = 0.08 / (dist + 0.02);
+        glow = pow(glow, 1.2);
+        
+        // Color
+        vec3 col = palette(i * 0.3 + time * 0.15 + p.x * 0.1);
+        finalColor += col * glow;
       }
+      
+      // Boost overall brightness
+      finalColor *= 1.5;
       
       float alpha = clamp(length(finalColor), 0.0, 1.0);
       gl_FragColor = vec4(finalColor, alpha);
@@ -96,7 +103,7 @@ function FullScreenQuad({
         matRef.current.uniforms.time.value += delta * speed
         matRef.current.uniforms.resolution.value.set(state.size.width, state.size.height)
 
-        // Smooth follow cursor
+        // Smooth follow cursor (slower)
         const lerpSpeed = 1.5
         smoothPointer.current.x += (mousePos.current.x - smoothPointer.current.x) * delta * lerpSpeed
         smoothPointer.current.y += (mousePos.current.y - smoothPointer.current.y) * delta * lerpSpeed
